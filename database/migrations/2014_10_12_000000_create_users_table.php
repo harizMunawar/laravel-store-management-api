@@ -17,10 +17,12 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->enum('gender', ['M', 'F'])->nullable()->default(NULL);
+            $table->string('phone')->nullable()->default(NULL);
+            $table->integer('store_id')->unsigned()->nullable()->default(NULL);
+            $table->boolean('is_superadmin')->nullable()->default(false);
             $table->string('password');
             $table->rememberToken();
-            $table->timestamps();
         });
     }
 
