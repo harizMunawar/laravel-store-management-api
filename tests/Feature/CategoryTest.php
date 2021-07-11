@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Category;
+use App\Http\Resources\CategoryResource;
 
 class CategoryTest extends TestCase
 {
@@ -23,16 +24,21 @@ class CategoryTest extends TestCase
 
     public function test_get_all_categories(): void
     {
+        $data = CategoryResource::collection(Category::all());
+
         $response = $this->getJson('/api/categories/');
-        $response->assertOk();
+        $response->assertOk()
+                 ->assertJson($data->jsonSerialize());
     }
 
     public function test_get_a_category_detail(): void
     {
         $id = rand(1, 5);
+        $data = new CategoryResource(Category::find($id));
 
         $response = $this->getJson('/api/categories/'.$id.'/');
-        $response->assertOk();
+        $response->assertOk()
+                 ->assertJson($data->jsonSerialize());
     }
 
     public function test_get_a_category_detail_with_nonexisting_id(): void
@@ -43,7 +49,7 @@ class CategoryTest extends TestCase
 
     public function test_create_a_category_with_superadmin_permission(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->superadmin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
                          ->postJson('/api/categories/', $this->valid_create_category_payload);
         $response->assertCreated();
 
@@ -55,7 +61,7 @@ class CategoryTest extends TestCase
 
     public function test_create_a_category_with_admin_permission(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->admin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
                          ->postJson('/api/categories/', $this->valid_create_category_payload);
         $response->assertForbidden();
     }
@@ -68,7 +74,7 @@ class CategoryTest extends TestCase
 
     public function test_update_a_category_with_superadmin_permission(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->superadmin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
                          ->putJson('/api/categories/1/', $this->valid_create_category_payload);
         $response->assertOk();
 
@@ -80,7 +86,7 @@ class CategoryTest extends TestCase
 
     public function test_update_a_category_with_admin_permission(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->admin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
                          ->putJson('/api/categories/1/', $this->valid_create_category_payload);
         $response->assertForbidden();
     }
@@ -93,7 +99,7 @@ class CategoryTest extends TestCase
 
     public function test_update_a_category_with_nonexisting_id(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->superadmin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
                          ->putJson('/api/categories/10/', $this->valid_create_category_payload);
         $response->assertNotFound();
     }
@@ -102,7 +108,7 @@ class CategoryTest extends TestCase
     {
         $category = Category::find(1);
 
-        $response = $this->withHeaders(['Authorization'=> $this->superadmin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
                          ->deleteJson('/api/categories/1/');
         $response->assertNoContent();
 
@@ -111,7 +117,7 @@ class CategoryTest extends TestCase
 
     public function test_delete_a_category_with_admin_permission(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->admin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
                          ->deleteJson('/api/categories/1/');
         $response->assertForbidden();
     }
@@ -124,7 +130,7 @@ class CategoryTest extends TestCase
 
     public function test_delete_a_category_with_nonexisting_id(): void
     {
-        $response = $this->withHeaders(['Authorization'=> $this->superadmin_token])
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
                          ->deleteJson('/api/categories/10/', $this->valid_create_category_payload);
         $response->assertNotFound();
     }
