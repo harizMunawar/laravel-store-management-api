@@ -14,6 +14,8 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
+        User::factory()->count(5)->create();
+
         $this->valid_create_user_payload = [
             'name'=> 'New Admin',
             'email'=> 'newadmin@email.com',
@@ -29,7 +31,6 @@ class UserTest extends TestCase
     */
     public function test_get_all_admin_and_superadmin(): void
     {
-        User::factory()->count(5)->create();
         $users_data = UserResource::collection(User::all());
         
         $response = $this->getJson('/api/users/');
@@ -39,7 +40,6 @@ class UserTest extends TestCase
 
     public function test_get_admin_or_superadmin_detail(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(1, 7);
         $user_data = new UserResource(User::find($id));
 
@@ -89,7 +89,6 @@ class UserTest extends TestCase
     */
     public function test_update_an_admin_with_superadmin_permission(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(2, 7);
 
         $response = $this->withHeaders([
@@ -102,7 +101,6 @@ class UserTest extends TestCase
 
     public function test_update_an_admin_with_admin_permission(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(2, 7);
 
         $response = $this->withHeaders([
@@ -114,7 +112,6 @@ class UserTest extends TestCase
 
     public function test_update_an_admin_with_unauthorized_user(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(2, 7);
 
         $response = $this->putJson('/api/users/'.$id.'/', $this->valid_create_user_payload);
@@ -135,7 +132,6 @@ class UserTest extends TestCase
     */
     public function test_delete_an_admin_with_superadmin_permission(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(2, 7);
         $user = User::find($id);
 
@@ -149,7 +145,6 @@ class UserTest extends TestCase
 
     public function test_delete_an_admin_with_admin_permission(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(2, 7);
 
         $response = $this->withHeaders([
@@ -161,7 +156,6 @@ class UserTest extends TestCase
 
     public function test_delete_an_admin_with_unauthorized_user(): void
     {
-        User::factory()->count(5)->create();
         $id = rand(2, 7);
 
         $response = $this->deleteJson('/api/users/5/');
