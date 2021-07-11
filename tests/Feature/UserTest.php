@@ -14,34 +14,6 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
-        User::create([
-            'name'=> 'Super Admin',
-            'email'=> 'validsuperadmin@email.com',
-            'password'=> bcrypt('validpassword'),
-            'gender'=> 'M',
-            'phone'=> '0123456789',
-            'is_superadmin'=> true,
-        ]);
-
-        User::create([
-            'name'=> 'Admin',
-            'email'=> 'validadmin@email.com',
-            'password'=> bcrypt('validpassword'),
-            'gender'=> 'M',
-            'phone'=> '0123456789',
-            'is_superadmin'=> false,
-        ]);
-
-        $this->superadmin_token = $this->postJson('/api/login/', [
-            'email'=> 'validsuperadmin@email.com',
-            'password'=> 'validpassword',
-        ])['token'];
-
-        $this->admin_token = $this->postJson('/api/login/', [
-            'email'=> 'validadmin@email.com',
-            'password'=> 'validpassword',
-        ])['token'];
-
         $this->valid_create_user_payload = [
             'name'=> 'New Admin',
             'email'=> 'newadmin@email.com',
