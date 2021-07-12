@@ -20,7 +20,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/users/{id}/', [UserController::class, 'show'])
         ->withoutMiddleware(['auth:sanctum'])
         ->name('detail-user');
-    Route::post('/users/', [UserController::class, 'store'])
+    Route::post('/users/', [UserController::class, 'create'])
         ->name('create-user');
     Route::put('/users/{id}/', [UserController::class, 'update'])
         ->name('update-user');
@@ -33,7 +33,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/categories/{id}/', [CategoryController::class, 'show'])
         ->withoutMiddleware(['auth:sanctum'])
         ->name('detail-category');
-    Route::post('/categories/', [CategoryController::class, 'store'])
+    Route::post('/categories/', [CategoryController::class, 'create'])
         ->name('create-category');
     Route::put('/categories/{id}/', [CategoryController::class, 'update'])
         ->name('update-category');

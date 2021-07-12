@@ -13,7 +13,7 @@ class CategoryController extends Controller
         return response()->json(CategoryResource::collection(Category::all()), 200);
     }
 
-    public function store(Request $request)
+    public function create(Request $request)
     {
         if ($request->user()->is_superadmin == FALSE){
             return response()->json(['message'=> 'You do not have permission to do this action'], 403);

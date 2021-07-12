@@ -13,7 +13,7 @@ class UserController extends Controller
         return response()->json(UserResource::collection(User::all()), 200);
     }
 
-    public function store(Request $request)
+    public function create(Request $request)
     {
         if ($request->user()->is_superadmin == FALSE){
             return response()->json(['message'=> 'You do not have permission to do this action'], 403);
