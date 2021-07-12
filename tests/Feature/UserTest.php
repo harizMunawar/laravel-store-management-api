@@ -166,11 +166,14 @@ class UserTest extends TestCase
 
     public function test_self_delete_an_admin(): void
     {
+        $user = User::find(2);
+
         $response = $this->withHeaders([
             'Authorization'=> 'Bearer '.$this->admin_token
         ])->deleteJson('/api/users/2/');
-        $user_data = new UserResource(User::find(2));
+        
         $response->assertNoContent();
+        $this->assertDeleted($user);
     }
 
     public function test_delete_an_admin_with_unauthorized_user(): void
