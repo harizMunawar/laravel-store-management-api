@@ -33,7 +33,7 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        if ($request->user()->is_superadmin == FALSE){
+        if ($request->user()->is_superadmin == FALSE || $request->user()->id == $id){
             return response()->json(['message'=> 'You do not have permission to do this action'], 403);
         }
 
@@ -45,7 +45,7 @@ class UserController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        if ($request->user()->is_superadmin == FALSE){
+        if ($request->user()->is_superadmin == FALSE || $request->user()->id == $id){
             return response()->json(['message'=> 'You do not have permission to do this action'], 403);
         }
 
