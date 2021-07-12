@@ -38,7 +38,7 @@ class UserController extends Controller
         }
 
         $data = User::findOrFail($id);
-        $data->update($request->except(['password']));
+        $data->update($request->except(['password', 'store_id']));
 
         return response()->json(new UserResource(User::findOrFail($id)), 200);
     }
