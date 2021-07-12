@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Store;
+use App\Models\User;
 use App\Http\Resources\StoreResource;
 
 class StoreTest extends TestCase
@@ -18,6 +19,7 @@ class StoreTest extends TestCase
 
         $this->valid_create_store_payload = [
             'name'=> 'New Store',
+            'contact_number'=> '0912381323',
             'description'=> 'Hello we are a newly opened store'
         ];
     }
@@ -40,28 +42,24 @@ class StoreTest extends TestCase
     */
     public function test_get_all_stores_with_admin_permission(): void
     {
-        // Assign an admin to a store for testing purpose.
-        // 2 is the admin id from the parent::setUp function
-        $user = User::find(2);
-        $user->store_id = 1;
-        $user->save();
-        $store = new StoreResource(Store::find(1));
-
+        // Testing for when the requesting admin is currently not owning any store
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
                          ->getJson('/api/stores/');
-        $response->assertOk()
-                 ->assertJson($stores->jsonSerialize());
+        $response->assertStatus(400)
+                 ->assertJson(['message'=> 'validadmin@email.com currently not owning any store, please ask a superadmin to assign one to you.']);
+    }
 
-        // Testing for when the requesting admin
-        // is currently not owning any store
-        $user = User::factory()->count(1)->create();
-        $user->store_id = NULL;
+    public function test_get_all_stores_with_admin_permission2(): void
+    {
+        // Create a new user to be the owner of store 1
+        User::factory()->count(1)->create(['id'=> 999]);
+        $user = User::find(999);
+        $user->store_id = 1;
         $user->save();
 
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->getToken($user->id)])
                          ->getJson('/api/stores/');
-        $response->assertStatus(400)
-                 ->assertJson(['message'=> $user->email.' currently not owning any store, please ask a superadmin to assign one to you.']);
+        $response->assertOk();
     }
 
     public function test_get_all_stores_with_unauthorized_user(): void
@@ -86,23 +84,24 @@ class StoreTest extends TestCase
     */
     public function test_get_a_store_with_admin_permission(): void
     {
+        // Requesting the api using an admin that are not the owner of store 1
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
+                         ->getJson('/api/stores/1/');
+        $response->assertForbidden();
+    }
+
+    public function test_get_a_store_with_admin_permission2(): void
+    {
         // Create a new user to be the owner of store 1
         User::factory()->count(1)->create();
         $user = User::find(3);
         $user->store_id = 1;
         $user->save();
-        $store = new StoreResource(Store::find(1));
-
-        // Requesting the api using an admin that are not the owner of store 1
-        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
-                         ->getJson('/api/stores/1/');
-        $response->assertForbidden();
 
         // Requesting the api using an admin that are the owner of store 1
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->getToken($user->id)])
                          ->getJson('/api/stores/1/');
-        $response->assertOk()
-                 ->assertJson($store->jsonSerialize());
+        $response->assertOk();
     }
 
     public function test_get_a_store_with_unauthorized_store(): void
@@ -111,11 +110,18 @@ class StoreTest extends TestCase
         $response->assertUnauthorized();
     }
 
+    public function test_get_a_store_with_nonexisting_id(): void
+    {
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
+                         ->getJson('/api/stores/99/');
+        $response->assertNotFound();
+    }
+
     public function test_create_a_store_with_superadmin_permission(): void
     {
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
                          ->postJson('/api/stores/', $this->valid_create_store_payload);
-        $store = new StoreResource(Store::where('name', $response['name']));
+        $store = new StoreResource(Store::where('name', $response['name'])->first());
         $response->assertCreated()
                  ->assertJson($store->jsonSerialize());
 
@@ -158,23 +164,24 @@ class StoreTest extends TestCase
     */ 
     public function test_update_a_store_with_admin_permission(): void
     {
+        // Requesting the api using an admin that are not the owner of store 1
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
+                         ->putJson('/api/stores/1/', $this->valid_create_store_payload);
+        $response->assertForbidden();
+    }
+
+    public function test_update_a_store_with_admin_permission2(): void
+    {
         // Create a new user to be the owner of store 1
         User::factory()->count(1)->create();
         $user = User::find(3);
         $user->store_id = 1;
         $user->save();
-        $store = new StoreResource(Store::find(1));
 
-        // Request the api using an admin that are not the owner of store 1
-        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
-                         ->putJson('/api/stores/1/', $this->valid_create_store_payload);
-        $response->assertForbidden();
-
-        // Request the api using an admin that are the owner of store 1
+        // Requesting the api using an admin that are the owner of store 1
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->getToken($user->id)])
                          ->putJson('/api/stores/1/', $this->valid_create_store_payload);
-        $response->assertOk()
-                 ->assertJson($store->jsonSerialize());
+        $response->assertOk();
         
         // Check if the record is updated on the database
         $this->assertDatabaseHas('stores', [
@@ -188,6 +195,13 @@ class StoreTest extends TestCase
     {
         $response = $this->putJson('/api/stores/1/', $this->valid_create_store_payload);
         $response->assertUnauthorized();
+    }
+
+    public function test_update_a_store_with_nonexisting_id(): void
+    {
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
+                         ->putJson('/api/stores/99/', $this->valid_create_store_payload);
+        $response->assertNotFound();
     }
 
     public function test_delete_a_store_with_superadmin_permission(): void
@@ -207,6 +221,14 @@ class StoreTest extends TestCase
     */
     public function test_delete_a_store_with_admin_permission(): void
     {
+        // Requesting the api using an admin that are not the owner of store 1
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
+                         ->deleteJson('/api/stores/1/');
+        $response->assertForbidden();
+    }
+
+    public function test_delete_a_store_with_admin_permission2(): void
+    {
         // Create a new user to be the owner of store 1
         User::factory()->count(1)->create();
         $user = User::find(3);
@@ -215,12 +237,7 @@ class StoreTest extends TestCase
         $store_record = Store::find(1);
         $store = new StoreResource($store_record);
 
-        // Request the api using an admin that are not the owner of store 1
-        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->admin_token])
-                         ->deleteJson('/api/stores/1/');
-        $response->assertForbidden();
-
-        // Request the api using an admin that are the owner of store 1
+        // Requesting the api using an admin that are the owner of store 1
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->getToken($user->id)])
                          ->deleteJson('/api/stores/1/');
         $response->assertNoContent();
@@ -235,23 +252,34 @@ class StoreTest extends TestCase
         $response->assertUnauthorized();
     }
 
+    public function test_delete_a_store_with_nonexisting_id(): void
+    {
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
+                         ->deleteJson('/api/stores/99/');
+        $response->assertNotFound();
+    }
+
     public function test_assigning_store_ownership_with_superadmin_permission(): void
     {
         // Creating two new users with null store id for testing purpose 
-        User::factory()->count(2)->create();
-        $new_user_1 = User::find(3);
-        $new_user_1->store_id = NULL;
-        $new_user_1->save();
-        $new_user_2 = User::find(4);
-        $new_user_2->store_id = NULL;
-        $new_user_2->save();
+        User::factory()->count(1)->create();
+        $new_user = User::find(3);
 
         // Requesting the api while the store have no owner
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
-                         ->postJson('/api/stores/1/owner/users/'.$new_user_1->id.'/');
+                         ->postJson('/api/stores/1/owner/users/'.$new_user->id.'/');
         $response->assertOk();
-        $user = User::find($new_user_1->id);
+        $user = User::find($new_user->id);
         $this->assertEquals($user->store_id, 1);
+    }
+
+    public function test_assigning_store_ownership_with_superadmin_permission2(): void
+    {
+        User::factory()->count(2)->create();
+        $new_user_1 = User::find(3);
+        $new_user_1->store_id = 1;
+        $new_user_1->save();
+        $new_user_2 = User::find(4);
 
         // Requesting the api while the store have an owner
         $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
@@ -271,6 +299,20 @@ class StoreTest extends TestCase
     {
         $response = $this->postJson('/api/stores/1/owner/users/2/');
         $response->assertUnauthorized();
+    }
+
+    public function test_assigning_store_ownership_with_nonexisting_store_id(): void
+    {
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
+                         ->postJson('/api/stores/10/owner/users/2/');
+        $response->assertNotFound();
+    }
+
+    public function test_assigning_store_ownership_with_nonexisting_user_id(): void
+    {
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
+                         ->postJson('/api/stores/1/owner/users/10/');
+        $response->assertNotFound();
     }
 
     public function test_deleting_store_ownership_with_superadmin_permission(): void
@@ -304,5 +346,12 @@ class StoreTest extends TestCase
     {
         $response = $this->deleteJson('/api/stores/1/owner/');
         $response->assertUnauthorized();
+    }
+
+    public function test_deleting_store_ownership_with_nonexisting_store_id(): void
+    {
+        $response = $this->withHeaders(['Authorization'=> 'Bearer '.$this->superadmin_token])
+                         ->deleteJson('/api/stores/10/owner/');
+        $response->assertNotFound();
     }
 }

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\StoreController;
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/login/', [AuthController::class, 'login'])
@@ -38,4 +39,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         ->name('update-category');
     Route::delete('/categories/{id}/', [CategoryController::class, 'destroy'])
         ->name('delete-category');
+
+    Route::get('/stores/', [StoreController::class, 'index'])
+        ->name('list-store');
+    Route::get('/stores/{id}/', [StoreController::class, 'show'])
+        ->name('detail-store');
+    Route::post('/stores/', [StoreController::class, 'create'])
+        ->name('create-store');
+    Route::put('/stores/{id}/', [StoreController::class, 'update'])
+        ->name('update-store');
+    Route::delete('/stores/{id}/', [StoreController::class, 'destroy'])
+        ->name('delete-store');
+    Route::post('/stores/{id}/owner/users/{user_id}/', [StoreController::class, 'assignOwner'])
+        ->name('assign-store-owner');
+    Route::delete('/stores/{id}/owner/', [StoreController::class, 'unassignOwner'])
+        ->name('unassign-store-owner');
 });

@@ -26,9 +26,10 @@ class UserController extends Controller
         return response()->json(new UserResource(User::create($data)), 201);        
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        return response()->json(new UserResource(User::findOrFail($id)), 200);
+        $user = User::findOrFail($id);
+        return response()->json(new UserResource($user->refresh()), 200);
     }
 
     public function update(Request $request, $id)

@@ -57,15 +57,9 @@ abstract class TestCase extends BaseTestCase
     public function getToken($id): string
     {
         $user = User::find($id);
-        $token = postJson(
-            '/api/login/',
-            [
-                'email'=> $user->email,
-                'password'=> $user->password,
-            ]
-        )['token'];
+        $token = $user->createToken('appToken')->plainTextToken;
 
-        return token;
+        return $token;
     }
 
 

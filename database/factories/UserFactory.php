@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'gender' => $gender[rand(0, 1)],
             'phone' => '0216854897',
             'is_superadmin' => false,
-            'store_id' => rand(1, 3),
+            'store_id' => NULL,
             'remember_token' => Str::random(10),
         ];
     }

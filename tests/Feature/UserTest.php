@@ -89,7 +89,7 @@ class UserTest extends TestCase
     */
     public function test_update_an_admin_with_superadmin_permission(): void
     {
-        $id = rand(2, 7);
+        $id = rand(3, 7);
 
         $response = $this->withHeaders([
             'Authorization'=> 'Bearer '.$this->superadmin_token
@@ -99,9 +99,9 @@ class UserTest extends TestCase
                  ->assertJson($user_data->jsonSerialize());
     }
 
-    public function test_update_an_admin_with_admin_permission(): void
+    public function test_update_another_admin_with_admin_permission(): void
     {
-        $id = rand(2, 7);
+        $id = rand(3, 7);
 
         $response = $this->withHeaders([
             'Authorization'=> 'Bearer '.$this->admin_token
@@ -110,9 +110,19 @@ class UserTest extends TestCase
                  ->assertJson(['message'=> 'You do not have permission to do this action']);
     }
 
+    public function test_self_update_an_admin(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization'=> 'Bearer '.$this->admin_token
+        ])->putJson('/api/users/2/', $this->valid_create_user_payload);
+        $user_data = new UserResource(User::find(2));
+        $response->assertOk()
+                 ->assertJson($user_data->jsonSerialize());
+    }
+
     public function test_update_an_admin_with_unauthorized_user(): void
     {
-        $id = rand(2, 7);
+        $id = rand(3, 7);
 
         $response = $this->putJson('/api/users/'.$id.'/', $this->valid_create_user_payload);
         $response->assertUnauthorized();
@@ -143,15 +153,24 @@ class UserTest extends TestCase
         $this->assertDeleted($user);
     }
 
-    public function test_delete_an_admin_with_admin_permission(): void
+    public function test_delete_another_admin_with_admin_permission(): void
     {
-        $id = rand(2, 7);
+        $id = rand(3, 7);
 
         $response = $this->withHeaders([
             'Authorization'=> 'Bearer '.$this->admin_token
-        ])->deleteJson('/api/users/5/');
+        ])->deleteJson('/api/users/'.$id.'/');
         $response->assertForbidden()
                  ->assertJson(['message'=> 'You do not have permission to do this action']);
+    }
+
+    public function test_self_delete_an_admin(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization'=> 'Bearer '.$this->admin_token
+        ])->deleteJson('/api/users/2/');
+        $user_data = new UserResource(User::find(2));
+        $response->assertNoContent();
     }
 
     public function test_delete_an_admin_with_unauthorized_user(): void
