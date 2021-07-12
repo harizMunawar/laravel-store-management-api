@@ -54,6 +54,20 @@ abstract class TestCase extends BaseTestCase
         Artisan::call('migrate'); // runs the migration
     }
 
+    public function getToken($id): string
+    {
+        $user = User::find($id);
+        $token = postJson(
+            '/api/login/',
+            [
+                'email'=> $user->email,
+                'password'=> $user->password,
+            ]
+        )['token'];
+
+        return token;
+    }
+
 
     /**
      * Rolls back migrations
