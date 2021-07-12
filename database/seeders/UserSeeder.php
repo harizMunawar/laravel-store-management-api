@@ -22,5 +22,14 @@ class UserSeeder extends Seeder
             'phone'=> '0123456789',
             'is_superadmin'=> true,
         ]);
+
+        User::create([
+            'name'=> 'Store Admin',
+            'email'=> 'storeadmin@email.com',
+            'password'=> bcrypt('validpassword'),
+            'gender'=> 'M',
+            'phone'=> '0123456789',
+            'is_superadmin'=> false,
+        ]);
     }
 }

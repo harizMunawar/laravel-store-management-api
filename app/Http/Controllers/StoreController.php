@@ -38,7 +38,7 @@ class StoreController extends Controller
         }
 
         if ($request->user()->store_id == $id){
-            $store = Store::find((int)$request->user()->store_id);
+            $store = Store::find($request->user()->store_id);
             if ($store){
                 return response()->json(new StoreResource($store), 200);
             }

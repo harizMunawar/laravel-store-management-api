@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\CategoryProduct;
+use App\Models\Store;
 use App\Http\Resources\StoreResource;
 use App\Http\Resources\CategoryResource;
 

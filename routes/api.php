@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\ProductController;
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/login/', [AuthController::class, 'login'])
@@ -54,4 +55,23 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         ->name('assign-store-owner');
     Route::delete('/stores/{id}/owner/', [StoreController::class, 'unassignOwner'])
         ->name('unassign-store-owner');
+
+    Route::get('/products/', [ProductController::class, 'index'])
+        ->name('list-product');
+    Route::get('/products/store/{store_id}/', [ProductController::class, 'storeProduct'])
+        ->name('list-product-by-store');
+    Route::get('/products/{id}/', [ProductController::class, 'show'])
+        ->name('detail-product');
+    Route::post('/stores/{store_id}/products/', [ProductController::class, 'create'])
+        ->name('create-product');
+    Route::put('/products/{id}/', [ProductController::class, 'update'])
+        ->name('update-product');
+    Route::delete('/products/{id}/', [ProductController::class, 'destroy'])
+        ->name('delete-product');
+    Route::post('products/{id}/categories/{category_id}/', [ProductController::class, 'addCategory'])
+        ->name('add-category');
+    Route::delete('products/{id}/categories/{category_id}/', [ProductController::class, 'removeCategory'])
+        ->name('remove-category');
+    Route::put('products/{id}/stock/{new_stock}/', [ProductController::class, 'updateStock'])
+        ->name('update-stock');
 });
