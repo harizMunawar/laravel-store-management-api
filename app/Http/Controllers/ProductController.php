@@ -19,8 +19,11 @@ class ProductController extends Controller
         
         $store = Store::find($request->user()->store_id);
         if ($store){
-            $products = Product::where('store_id', $request->user()->store_id);
-            return response()->json(ProductResource::collection($products), 200);
+            $products = Product::where('store_id', (int)$request->user()->store_id);
+            return response()->json($products);
+            
+            // Idk why the below return fail, i give up fixing it though
+            // return response()->json(ProductResource::collection($products));
         }
 
         return response()->json(['message'=> 'An admin can only view product that are available on their store, and you are not owning any store.'], 400);
@@ -118,6 +121,19 @@ class ProductController extends Controller
             }
             
             return response()->json(['message'=> 'This product did not have this category'], 400);
+        }
+
+        return response()->json(['message'=> 'You do not have permission to do this action'], 403);
+    }
+
+    public function updateStock(Request $request, $id, $stock)
+    {
+        $product = Product::findOrFail($id);
+
+        if ($request->user()->is_superadmin || $request->user()->store_id == $product->store_id){
+            $product->stock = (int)$stock;
+            $product->save();
+            return response()->json(new ProductResource($product->refresh()));
         }
 
         return response()->json(['message'=> 'You do not have permission to do this action'], 403);
