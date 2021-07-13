@@ -22,7 +22,7 @@ By default, the username is root and you can leave the password field empty.
 
 ## Live Server
 Hosted on heroku<br>
-https://data-store-management.herokuapp.com/api.
+https://hariz-store-api.herokuapp.com/api.
 
 ## Account
 #### Superadmin
